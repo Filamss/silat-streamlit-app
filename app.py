@@ -9,20 +9,28 @@ from nltk.corpus import stopwords
 from wordcloud import WordCloud
 import nltk
 
-# ✅ Download stopwords (hanya saat pertama kali)
+# ✅ Download stopwords (jika pertama kali)
 nltk.download('stopwords')
 
 # ================================
-# 🔌 Koneksi ke MongoDB Lokal
+# 🔌 Koneksi ke MongoDB Atlas via secrets.toml
 # ================================
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient(st.secrets["MONGO_URI"])
 collection = client['silatdb']['silat_artikel']
 
 # ================================
 # 📥 Ambil data dari MongoDB
 # ================================
-data = list(collection.find({}, {'_id': 0}))
-df = pd.DataFrame(data)
+@st.cache_data
+def load_data():
+    data = list(collection.find({}, {'_id': 0}))
+    return pd.DataFrame(data)
+
+df = load_data()
+
+if df.empty:
+    st.error("❌ Data tidak ditemukan di MongoDB.")
+    st.stop()
 
 # ================================
 # 🧹 Parsing tanggal dan konten
