@@ -6,3 +6,4 @@ pymongo
 python-dateutil
 nltk
 wordcloud
+certifi
